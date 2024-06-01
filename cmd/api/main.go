@@ -21,16 +21,19 @@ func main() {
 	e := echo.New()
 
 	err := godotenv.Load()
-	db, err := common.NewMysql()
 	if err != nil {
 		e.Logger.Fatal(err.Error())
 	}
+
+	db, err := common.NewMysql()
+
 	if err != nil {
 		e.Logger.Fatal("Error loading .env file")
 	}
 
 	h := handlers.Handler{
-		DB: db,
+		DB:     db,
+		Logger: e.Logger,
 	}
 	app := Application{
 		logger:  e.Logger,
