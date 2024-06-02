@@ -54,3 +54,8 @@ func ParseJWTSignedAccessToken(signedAccessToken string) (*CustomJWTClaims, erro
 		return nil, errors.New("unknown claims type, cannot proceed")
 	}
 }
+
+func IsClaimExpired(claims *CustomJWTClaims) bool {
+	currentTime := jwt.NewNumericDate(time.Now())
+	return claims.ExpiresAt.Time.Before(currentTime.Time)
+}

@@ -13,9 +13,10 @@ import (
 )
 
 type Application struct {
-	logger  echo.Logger
-	server  *echo.Echo
-	handler handlers.Handler
+	logger        echo.Logger
+	server        *echo.Echo
+	handler       handlers.Handler
+	appMiddleware middlewares.AppMiddleware
 }
 
 func main() {
@@ -38,10 +39,15 @@ func main() {
 		Logger: e.Logger,
 		Mailer: appMailer,
 	}
+	appMiddleware := middlewares.AppMiddleware{
+		DB:     db,
+		Logger: e.Logger,
+	}
 	app := Application{
-		logger:  e.Logger,
-		server:  e,
-		handler: h,
+		logger:        e.Logger,
+		server:        e,
+		handler:       h,
+		appMiddleware: appMiddleware,
 	}
 	e.Use(middleware.Logger())
 	e.Use(middlewares.AnotherMiddleware)
