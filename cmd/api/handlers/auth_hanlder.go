@@ -92,10 +92,14 @@ func (h *Handler) LoginHandler(c echo.Context) error {
 	})
 }
 
-func (h Handler) GetAuthenticatedUser(c echo.Context) error {
+func (h *Handler) GetAuthenticatedUser(c echo.Context) error {
 	user, ok := c.Get("user").(models.UserModel)
 	if !ok {
 		return common.SendInternalServerErrorResponse(c, "User authentication failed")
 	}
 	return common.SendSuccessResponse(c, "Authenticated user retrieved", user)
+}
+
+func (h *Handler) UpdateUserPassword(c echo.Context) error {
+	return nil
 }

@@ -5,9 +5,19 @@ import (
 )
 
 func (app *Application) routes(handler handlers.Handler) {
+	apiGroup := app.server.Group("/api")
+	publicAuthRoutes := apiGroup.Group("/auth")
+	{
+		publicAuthRoutes.POST("/register", handler.RegisterHandler)
+		publicAuthRoutes.POST("/login", handler.LoginHandler)
+	}
+
+	profileRoutes := apiGroup.Group("/profile", app.appMiddleware.AuthenticationMiddleware)
+	{
+		profileRoutes.GET("/authenticated/user", handler.GetAuthenticatedUser)
+		profileRoutes.PATCH("/update/password", handler.UpdateUserPassword)
+	}
 
 	app.server.GET("/", handler.HealthCheck)
-	app.server.POST("/register", handler.RegisterHandler)
-	app.server.POST("/login", handler.LoginHandler)
-	app.server.GET("/authenticated/user", handler.GetAuthenticatedUser, app.appMiddleware.AuthenticationMiddleware)
+
 }
