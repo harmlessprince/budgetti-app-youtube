@@ -15,8 +15,7 @@ import (
 func (h *Handler) RegisterHandler(c echo.Context) error {
 	// bind request body
 	payload := new(requests.RegisterUserRequest)
-	if err := (&echo.DefaultBinder{}).BindBody(c, payload); err != nil {
-		c.Logger().Error(err)
+	if err := h.BindBodyRequest(c, payload); err != nil {
 		return common.SendBadRequestResponse(c, err.Error())
 	}
 
@@ -98,8 +97,4 @@ func (h *Handler) GetAuthenticatedUser(c echo.Context) error {
 		return common.SendInternalServerErrorResponse(c, "User authentication failed")
 	}
 	return common.SendSuccessResponse(c, "Authenticated user retrieved", user)
-}
-
-func (h *Handler) UpdateUserPassword(c echo.Context) error {
-	return nil
 }

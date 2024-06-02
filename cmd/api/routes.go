@@ -15,7 +15,7 @@ func (app *Application) routes(handler handlers.Handler) {
 	profileRoutes := apiGroup.Group("/profile", app.appMiddleware.AuthenticationMiddleware)
 	{
 		profileRoutes.GET("/authenticated/user", handler.GetAuthenticatedUser)
-		profileRoutes.PATCH("/update/password", handler.UpdateUserPassword)
+		profileRoutes.PATCH("/change/password", handler.ChangeUserPassword)
 	}
 
 	app.server.GET("/", handler.HealthCheck)
