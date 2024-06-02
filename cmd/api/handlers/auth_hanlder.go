@@ -6,6 +6,7 @@ import (
 	"github.com/harmlessprince/bougette-backend/cmd/api/services"
 	"github.com/harmlessprince/bougette-backend/common"
 	"github.com/harmlessprince/bougette-backend/internal/mailer"
+	"github.com/harmlessprince/bougette-backend/internal/models"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 	"os"
@@ -89,4 +90,12 @@ func (h *Handler) LoginHandler(c echo.Context) error {
 		"refresh_token": refreshToken,
 		"user":          userRetrieved,
 	})
+}
+
+func (h Handler) GetAuthenticatedUser(c echo.Context) error {
+	user, ok := c.Get("user").(models.UserModel)
+	if !ok {
+		return common.SendInternalServerErrorResponse(c, "User authentication failed")
+	}
+	return common.SendSuccessResponse(c, "Authenticated user retrieved", user)
 }
