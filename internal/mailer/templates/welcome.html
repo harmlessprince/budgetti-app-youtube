@@ -1,0 +1,64 @@
+{{define "subject"}}{{.Subject}}{{end}}
+{{define "htmlBody"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to {{.AppName}}!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            color: #666;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Welcome to {{.AppName}}!</h1>
+    <p>Dear {{.Meta.FirstName}},</p>
+    <p>Welcome aboard! We're thrilled to have you as a new member of {{.AppName}}, your go-to app for managing your finances and achieving your financial goals.</p>
+    <p>With {{.AppName}}, you can:</p>
+    <ul>
+        <li>Track your expenses and income.</li>
+        <li>Create budgets and savings goals.</li>
+        <li>Receive personalized financial insights.</li>
+        <li>And much more!</li>
+    </ul>
+    <p>We're here to help you take control of your finances and make smarter money decisions.</p>
+    <p>Get started now by logging into your account:</p>
+    <a href="{{.Meta.LoginLink}}" class="btn">Log In</a>
+    <p>If you have any questions or need assistance, feel free to reach out to our support team.</p>
+    <p>Best regards,<br>The {{.AppName}} Team</p>
+</div>
+</body>
+</html>
+{{end}}

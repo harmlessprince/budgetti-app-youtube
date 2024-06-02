@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/harmlessprince/bougette-backend/internal/mailer"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 )
@@ -8,4 +9,5 @@ import (
 type Handler struct {
 	DB     *gorm.DB
 	Logger echo.Logger
+	Mailer mailer.Mailer
 }

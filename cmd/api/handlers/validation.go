@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/harmlessprince/bougette-backend/common"
 	"github.com/labstack/echo/v4"
 	"reflect"
+	"strconv"
 	"strings"
 )
 
@@ -26,6 +28,7 @@ func (h *Handler) ValidateBodyRequest(c echo.Context, payload interface{}) []*co
 			}
 			condition := validationErr.Tag()
 			keyToTitleCase := strings.Replace(key, "_", " ", -1)
+			param := validationErr.Param()
 			errMessage := keyToTitleCase + " field is " + condition
 
 			switch condition {
@@ -33,6 +36,10 @@ func (h *Handler) ValidateBodyRequest(c echo.Context, payload interface{}) []*co
 				errMessage = keyToTitleCase + " is required"
 			case "email":
 				errMessage = keyToTitleCase + " must be a valid email address"
+			case "min":
+				if _, err := strconv.Atoi(param); err == nil {
+					errMessage = fmt.Sprintf("%s must be at least %s characters", keyToTitleCase, param)
+				}
 			}
 
 			currentValidationError := &common.ValidationError{
