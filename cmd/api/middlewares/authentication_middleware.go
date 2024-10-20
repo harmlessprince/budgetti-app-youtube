@@ -17,7 +17,7 @@ type AppMiddleware struct {
 func (appMiddleware *AppMiddleware) AuthenticationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 
 	return func(c echo.Context) error {
-		c.Response().Header().Add("Vary", "Authorization")
+
 		authHeader := c.Request().Header.Get("Authorization")
 		if strings.HasPrefix(authHeader, "Bearer ") == false {
 			return common.SendUnauthorizedResponse(c, "Please provide a Bearer token")
