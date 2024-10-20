@@ -40,6 +40,8 @@ func (h *Handler) ValidateBodyRequest(c echo.Context, payload interface{}) []*co
 				if _, err := strconv.Atoi(param); err == nil {
 					errMessage = fmt.Sprintf("%s must be at least %s characters", keyToTitleCase, param)
 				}
+			case "eqfield":
+				errMessage = keyToTitleCase + " must be equal to " + strings.ToLower(param)
 			}
 
 			currentValidationError := &common.ValidationError{

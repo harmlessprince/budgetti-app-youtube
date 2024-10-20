@@ -46,3 +46,18 @@ func (userService *UserService) GetUserByEmail(email string) (*models.UserModel,
 	}
 	return &user, nil
 }
+
+func (userService *UserService) ChangeUserPassword(newPassword string, user models.UserModel) error {
+	hashedPassword, err := common.HashPassword(newPassword)
+	if err != nil {
+		fmt.Println(err)
+		return errors.New("password change failed")
+	}
+
+	result := userService.db.Model(user).Update("Password", hashedPassword)
+	if result.Error != nil {
+		fmt.Println(result.Error)
+		return errors.New("password change failed")
+	}
+	return nil
+}
