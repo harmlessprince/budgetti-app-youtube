@@ -20,6 +20,13 @@ func (app *Application) routes(handler handlers.Handler) {
 		profileRoutes.PATCH("/change/password", handler.ChangeUserPassword)
 	}
 
+	categoryRoutes := apiGroup.Group("/categories", app.appMiddleware.AuthenticationMiddleware)
+	{
+		categoryRoutes.GET("/all", handler.ListCategories)
+		categoryRoutes.POST("/store", handler.CreateCategory)
+		categoryRoutes.DELETE("/delete/:id", handler.DeleteCategory)
+	}
+
 	app.server.GET("/", handler.HealthCheck)
 
 }
