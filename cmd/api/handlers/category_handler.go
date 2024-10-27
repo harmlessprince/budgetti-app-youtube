@@ -12,12 +12,14 @@ import (
 )
 
 func (h *Handler) ListCategories(c echo.Context) error {
+	var categories []*models.CategoryModel
 	categoryService := services.NewCategoryService(h.DB)
-	categories, err := categoryService.List()
+	paginator := common.NewPaginator(categories, c.Request(), h.DB)
+	paginatedCategory, err := categoryService.List(categories, paginator)
 	if err != nil {
 		return common.SendInternalServerErrorResponse(c, err.Error())
 	}
-	return common.SendSuccessResponse(c, "ok", categories)
+	return common.SendSuccessResponse(c, "ok", paginatedCategory)
 }
 
 func (h *Handler) CreateCategory(c echo.Context) error {

@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"github.com/harmlessprince/bougette-backend/cmd/api/requests"
+	"github.com/harmlessprince/bougette-backend/common"
 	"github.com/harmlessprince/bougette-backend/internal/app_errors"
 	"github.com/harmlessprince/bougette-backend/internal/models"
 	"gorm.io/gorm"
@@ -17,13 +18,10 @@ type CategoryService struct {
 func NewCategoryService(db *gorm.DB) *CategoryService {
 	return &CategoryService{DB: db}
 }
-func (c CategoryService) List() ([]*models.CategoryModel, error) {
-	var categories []*models.CategoryModel
-	result := c.DB.Find(&categories)
-	if result.Error != nil {
-		return nil, errors.New("failed to fetch all categories")
-	}
-	return categories, nil
+func (c CategoryService) List(categories []*models.CategoryModel, pagination *common.Pagination) (*common.Pagination, error) {
+	c.DB.Scopes(pagination.Paginate()).Find(&categories)
+	pagination.Items = categories
+	return pagination, nil
 }
 
 func (c CategoryService) Create(data *requests.CreateCategoryRequest) (*models.CategoryModel, error) {
