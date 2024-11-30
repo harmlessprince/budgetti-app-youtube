@@ -5,6 +5,7 @@ import (
 	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"log"
 	"os"
 )
@@ -20,7 +21,10 @@ func NewMysql() (*gorm.DB, error) {
 	username := os.Getenv("DB_USERNAME")
 	password := os.Getenv("DB_PASSWORD")
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", username, password, host, port, database)
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{TranslateError: true})
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		TranslateError: true,
+		Logger:         logger.Default.LogMode(logger.Info),
+	})
 	if err != nil {
 		return nil, err
 	}
