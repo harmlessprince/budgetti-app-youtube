@@ -7,6 +7,7 @@ import (
 	"github.com/harmlessprince/bougette-backend/internal/app_errors"
 	"github.com/harmlessprince/bougette-backend/internal/models"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"log"
 	"strings"
 )
@@ -66,14 +67,28 @@ func (c CategoryService) DeleteById(id uint) error {
 	return nil
 }
 
-//func (c CategoryService) getById(id int)  ()  {
-//
-//}
-//
-//func (c CategoryService) delete(id int)  ()  {
-//
-//}
-//
-//func (c CategoryService) getById(id int)  ()  {
-//
-//}
+func (c CategoryService) AssociateUserToCategories(user *models.UserModel, categories []*models.CategoryModel) error {
+	if user != nil && categories != nil && len(categories) > 0 {
+		var userCategories []*models.UserCategoryModel
+		for _, category := range categories {
+			userCategories = append(userCategories, &models.UserCategoryModel{
+				UserID:     user.ID,
+				CategoryID: category.ID,
+			})
+		}
+		err := c.DB.Clauses(clause.OnConflict{DoNothing: true}).Create(userCategories)
+		if err != nil {
+			return err.Error
+		}
+	}
+	return nil
+}
+
+func (c CategoryService) GetMultipleCategories(categoryIds []uint) ([]*models.CategoryModel, error) {
+	var categories []*models.CategoryModel
+	result := c.DB.Where("id IN ?", categoryIds).Find(&categories)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return categories, nil
+}

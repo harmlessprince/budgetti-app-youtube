@@ -22,9 +22,12 @@ func (app *Application) routes(handler handlers.Handler) {
 
 	categoryRoutes := apiGroup.Group("/categories", app.appMiddleware.AuthenticationMiddleware)
 	{
+		categoryRoutes.GET("/user/all", handler.ListUserCategories)
+		categoryRoutes.POST("/custom/store", handler.CreateCustomUserCategory)
 		categoryRoutes.GET("/all", handler.ListCategories)
 		categoryRoutes.POST("/store", handler.CreateCategory)
 		categoryRoutes.DELETE("/delete/:id", handler.DeleteCategory)
+		categoryRoutes.POST("/associate/user/to/categories", handler.AssociateUserToCategories)
 	}
 
 	app.server.GET("/", handler.HealthCheck)
