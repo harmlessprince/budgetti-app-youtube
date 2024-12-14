@@ -8,6 +8,7 @@ import (
 	"github.com/harmlessprince/bougette-backend/internal/app_errors"
 	"github.com/harmlessprince/bougette-backend/internal/models"
 	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
 )
 
 func (h *Handler) ListBudget(c echo.Context) error {
@@ -43,12 +44,6 @@ func (h *Handler) CreateBudget(c echo.Context) error {
 	budgetService := services.NewBudgetService(h.DB)
 	categoryService := services.NewCategoryService(h.DB)
 
-	createdBudget, err := budgetService.Create(payload, user.ID)
-	if err != nil {
-		c.Logger().Error(err)
-		return common.SendInternalServerErrorResponse(c, "Budget could not be created, try again later")
-	}
-
 	categories, err := categoryService.GetMultipleCategories(payload.Categories)
 
 	if err != nil {
@@ -56,11 +51,29 @@ func (h *Handler) CreateBudget(c echo.Context) error {
 		return common.SendInternalServerErrorResponse(c, "Budget could not be created")
 	}
 
-	err = budgetService.DB.Model(createdBudget).Association("Categories").Replace(categories)
+	createdBudget := &models.BudgetModel{}
+
+	err = h.DB.Transaction(func(tx *gorm.DB) error {
+		budgetService.DB = tx
+		categoryService.DB = tx
+		createdBudget, err = budgetService.Create(payload, user.ID)
+		if err != nil {
+			c.Logger().Error(err)
+			return common.SendInternalServerErrorResponse(c, "Budget could not be created, try again later")
+		}
+
+		err = tx.Model(createdBudget).Association("Categories").Replace(categories)
+
+		if err != nil {
+			c.Logger().Error(err)
+			return common.SendInternalServerErrorResponse(c, "Budget could not be created")
+		}
+
+		return nil
+	})
 
 	if err != nil {
-		c.Logger().Error(err)
-		return common.SendInternalServerErrorResponse(c, "Budget could not be created")
+		return common.SendInternalServerErrorResponse(c, err.Error())
 	}
 
 	createdBudget.Categories = categories
@@ -77,6 +90,19 @@ func (h *Handler) UpdateBudget(c echo.Context) error {
 		return common.SendBadRequestResponse(c, err.Error())
 	}
 
+	// bind request body
+	payload := new(requests.UpdateBudgetRequest)
+	if err := h.BindBodyRequest(c, payload); err != nil {
+		return common.SendBadRequestResponse(c, err.Error())
+	}
+
+	// validation
+	validationErrors := h.ValidateBodyRequest(c, *payload)
+
+	if validationErrors != nil {
+		return common.SendFailedValidationResponse(c, validationErrors)
+	}
+
 	budgetService := services.NewBudgetService(h.DB)
 	categoryService := services.NewCategoryService(h.DB)
 
@@ -91,35 +117,34 @@ func (h *Handler) UpdateBudget(c echo.Context) error {
 	if user.ID != budget.UserID {
 		return common.SendNotFoundResponse(c, "Budget not found")
 	}
-	// bind request body
-	payload := new(requests.UpdateBudgetRequest)
-	if err := h.BindBodyRequest(c, payload); err != nil {
-		return common.SendBadRequestResponse(c, err.Error())
-	}
 
-	// validation
-	validationErrors := h.ValidateBodyRequest(c, *payload)
-
-	if validationErrors != nil {
-		return common.SendFailedValidationResponse(c, validationErrors)
-	}
-
-	updatedBudget, err := budgetService.Update(budget, payload, budgetID.ID)
-	if err != nil {
-		c.Logger().Error(err)
-		return common.SendBadRequestResponse(c, err.Error())
-	}
+	var categories []*models.CategoryModel
 
 	if payload.Categories != nil {
-		categories, _ := categoryService.GetMultipleCategories(payload.Categories)
-		err = budgetService.DB.Model(updatedBudget).Association("Categories").Replace(categories)
+		categories, _ = categoryService.GetMultipleCategories(payload.Categories)
+	}
+
+	err = h.DB.Transaction(func(tx *gorm.DB) error {
+		budgetService.DB = tx
+		categoryService.DB = tx
+		updatedBudget, err := budgetService.Update(budget, payload, budgetID.ID)
 		if err != nil {
 			c.Logger().Error(err)
-			return common.SendInternalServerErrorResponse(c, "Budget could not be updated")
+			return common.SendBadRequestResponse(c, err.Error())
 		}
-		updatedBudget.Categories = categories
-	}
-	return common.SendSuccessResponse(c, "Budget updated successfully", updatedBudget)
+		if len(categories) > 0 {
+			err = budgetService.DB.Model(updatedBudget).Association("Categories").Replace(categories)
+			if err != nil {
+				c.Logger().Error(err)
+				return common.SendInternalServerErrorResponse(c, "Budget could not be updated")
+			}
+			updatedBudget.Categories = categories
+		}
+		budget = updatedBudget
+		return nil
+	})
+
+	return common.SendSuccessResponse(c, "Budget updated successfully", budget)
 }
 
 func (h *Handler) DeleteBudget(c echo.Context) error {
