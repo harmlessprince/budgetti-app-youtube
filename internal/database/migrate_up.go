@@ -17,6 +17,7 @@ func main() {
 		&models.CategoryModel{},
 		&models.UserCategoryModel{},
 		&models.BudgetModel{},
+		&models.WalletModel{},
 	)
 	if err != nil {
 		panic(err)
