@@ -57,3 +57,12 @@ func (w WalletService) GenerateDefaultWallets(id uint) ([]*models.WalletModel, e
 	}
 	return walletsCreated, nil
 }
+
+func (w WalletService) List(userID uint) ([]*models.WalletModel, error) {
+	var wallets []*models.WalletModel
+	result := w.DB.Model(models.WalletModel{}).Where("user_id = ?", userID).Find(&wallets)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return wallets, nil
+}

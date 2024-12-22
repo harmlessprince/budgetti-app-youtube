@@ -8,6 +8,15 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+func (h *Handler) ListWallet(c echo.Context) error {
+	user, _ := c.Get("user").(models.UserModel)
+	walletService := services.NewWalletService(h.DB)
+	wallets, err := walletService.List(user.ID)
+	if err != nil {
+		return common.SendInternalServerErrorResponse(c, "Wallets could not be retrieved, try again later")
+	}
+	return common.SendSuccessResponse(c, "Wallets retrieved", wallets)
+}
 func (h *Handler) CreateWallet(c echo.Context) error {
 	user, _ := c.Get("user").(models.UserModel)
 
