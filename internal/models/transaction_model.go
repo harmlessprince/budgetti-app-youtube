@@ -4,7 +4,7 @@ import "time"
 
 type TransactionModel struct {
 	BaseModel
-	ParentID    *uint          `gorm:"not null;column:parent_id" json:"-"`
+	ParentID    *uint          `gorm:"column:parent_id" json:"-"`
 	Title       *string        `gorm:"type:varchar(200)" json:"title"`
 	Description *string        `gorm:"type:varchar(500)" json:"description"`
 	UserID      uint           `gorm:"not null;column:user_id" json:"user_id"`
@@ -18,7 +18,7 @@ type TransactionModel struct {
 	IsReversal  bool           `gorm:"not null;type:boolean;default:false;" json:"is_reversal"`
 	Category    *CategoryModel `gorm:"foreignkey:CategoryID;constraint:OnDelete:CASCADE;" json:"category"`
 	Wallet      *WalletModel   `gorm:"foreignkey:WalletID;constraint:OnDelete:CASCADE;" json:"wallet"`
-	User        *UserModel     `gorm:"foreignkey:UserID;constraint:OnDelete:CASCADE;" json:"user"`
+	User        *UserModel     `gorm:"foreignkey:UserID;constraint:OnDelete:CASCADE;" json:"-"`
 }
 
 func (TransactionModel) TableName() string {

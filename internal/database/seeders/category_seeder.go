@@ -22,6 +22,7 @@ func main() {
 		"Debt", "Other", "Savings", "Paycheck", "Bonus",
 		"Interest", "Internet", "Calls", "Laundry", "Charity",
 		"Lendings", "Family Obligation", "Loans", "Grocery", "Chocolate",
+		"Transfer",
 	}
 	for _, category := range categories {
 		_, err = categroyService.Create(&requests.CreateCategoryRequest{

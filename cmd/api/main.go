@@ -52,6 +52,7 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middlewares.AnotherMiddleware)
 	e.Use(middlewares.CustomMiddleware)
+
 	app.routes(h)
 	fmt.Println(app)
 	port := os.Getenv("APP_PORT")
