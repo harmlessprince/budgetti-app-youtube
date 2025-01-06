@@ -38,15 +38,24 @@ func (app *Application) routes(handler handlers.Handler) {
 		budgetRoutes.DELETE("/delete/:id", handler.DeleteBudget)
 	}
 
-	walleRoutes := apiGroup.Group("/wallets", app.appMiddleware.AuthenticationMiddleware)
+	walletRoutes := apiGroup.Group("/wallets", app.appMiddleware.AuthenticationMiddleware)
 	{
-		walleRoutes.POST("/store", handler.CreateWallet)
-		walleRoutes.GET("/all", handler.ListWallet)
-		walleRoutes.GET("/generate/defaults", handler.GenerateDefaultWallets)
+		walletRoutes.POST("/store", handler.CreateWallet)
+		walletRoutes.GET("/all", handler.ListWallet)
+		walletRoutes.GET("/generate/defaults", handler.GenerateDefaultWallets)
 		//budgetRoutes.GET("/all", handler.ListBudget)
 		//budgetRoutes.PATCH("/update/:id", handler.UpdateBudget)
 		//budgetRoutes.DELETE("/delete/:id", handler.DeleteBudget)
 	}
+
+	transactionRoutes := apiGroup.Group("/transactions", app.appMiddleware.AuthenticationMiddleware)
+	{
+		transactionRoutes.POST("/store", handler.StoreTransaction)
+		transactionRoutes.PATCH("/reverse/:id", handler.ReverseTransaction)
+		transactionRoutes.GET("/all", handler.ListTransactions)
+		//budgetRoutes.DELETE("/delete/:id", handler.DeleteBudget)
+	}
+	apiGroup.POST("/transfer", handler.Transfer, app.appMiddleware.AuthenticationMiddleware)
 	app.server.GET("/", handler.HealthCheck)
 
 }

@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"github.com/harmlessprince/bougette-backend/cmd/api/requests"
 	"github.com/harmlessprince/bougette-backend/common"
 	"github.com/harmlessprince/bougette-backend/internal/app_errors"
@@ -118,4 +119,41 @@ func (b *BudgetService) Update(budget *models.BudgetModel, payload *requests.Upd
 	}
 	b.DB.Model(&budget).Updates(budget)
 	return budget, nil
+}
+func (b *BudgetService) GetBudgetsByCategoryID(db *gorm.DB, categoryID uint) ([]*models.BudgetModel, error) {
+	if db == nil {
+		db = b.DB
+	}
+	var budgets []*models.BudgetModel
+	result := db.Model(models.BudgetModel{}).Joins("JOIN budget_categories ON budget_categories.budget_model_id = budgets.id").
+		Joins("JOIN categories ON categories.id = budget_categories.category_model_id").
+		Where("categories.id = ?", categoryID).
+		Find(&budgets)
+	if result.Error != nil {
+		fmt.Println(result.Error.Error())
+		return nil, errors.New("could not get budgets")
+	}
+	return budgets, nil
+}
+
+func (b *BudgetService) DecrementBudgetBalance(db *gorm.DB, categoryID *uint, amount float64, userID uint) {
+	if categoryID == nil {
+		return
+	}
+	budgets, _ := b.GetBudgetsByCategoryID(db, *categoryID)
+	for _, budget := range budgets {
+		db.Model(models.BudgetModel{}).Scopes(common.WhereUserIDScope(userID)).Where("id", budget.ID).Updates(models.BudgetModel{Amount: budget.Amount - amount})
+	}
+
+}
+
+func (b *BudgetService) IncrementBudgetBalance(db *gorm.DB, categoryID *uint, amount float64, userID uint) {
+	if categoryID == nil {
+		return
+	}
+	budgets, _ := b.GetBudgetsByCategoryID(db, *categoryID)
+	fmt.Println("Increment budget balance", amount)
+	for _, budget := range budgets {
+		db.Model(models.BudgetModel{}).Scopes(common.WhereUserIDScope(userID)).Updates(models.BudgetModel{Amount: budget.Amount + amount})
+	}
 }

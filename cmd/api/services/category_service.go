@@ -92,3 +92,14 @@ func (c CategoryService) GetMultipleCategories(categoryIds []uint) ([]*models.Ca
 	}
 	return categories, nil
 }
+
+func (c CategoryService) findBySlug(slug string, isCustom bool) (*models.CategoryModel, error) {
+	var category models.CategoryModel
+	slug = strings.ToLower(slug)
+	slug = strings.Replace(slug, " ", "_", -1)
+	result := c.DB.Where("slug = ? AND is_custom = ?", slug, isCustom).First(&category)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &category, nil
+}

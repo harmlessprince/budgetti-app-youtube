@@ -8,6 +8,12 @@ func WhereUserIDScope(UserID uint) func(db *gorm.DB) *gorm.DB {
 	}
 }
 
+func WhereUserIDWithTableNameScope(UserID uint, tableName string) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		return db.Where(tableName+".user_id = ?", UserID) // select table_name.user_id = 1
+	}
+}
+
 func LoadCategories(db *gorm.DB) *gorm.DB {
 	return db.
 		Joins("LEFT JOIN budget_categories bc ON bc.budget_model_id = budgets.id").

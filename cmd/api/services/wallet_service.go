@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/harmlessprince/bougette-backend/cmd/api/requests"
+	"github.com/harmlessprince/bougette-backend/common"
 	"github.com/harmlessprince/bougette-backend/internal/models"
 	"gorm.io/gorm"
 )
@@ -65,4 +66,34 @@ func (w WalletService) List(userID uint) ([]*models.WalletModel, error) {
 		return nil, result.Error
 	}
 	return wallets, nil
+}
+func (w WalletService) FindById(walletID uint, userID uint) (*models.WalletModel, error) {
+	var wallet models.WalletModel
+	result := w.DB.Scopes(common.WhereUserIDScope(userID)).First(&wallet, walletID)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &wallet, nil
+}
+
+func (w WalletService) IncrementWalletBalance(tx *gorm.DB, wallet *models.WalletModel, amount float64) error {
+	balance := wallet.Balance + amount
+	wallet.Balance = balance
+	//result := tx.Model(wallet).Updates(models.WalletModel{Balance: balance})
+	result := tx.Model(&models.WalletModel{}).Where("id = ?", wallet.ID).Update("balance", balance)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (w WalletService) DecrementWalletBalance(tx *gorm.DB, wallet *models.WalletModel, amount float64) error {
+	balance := wallet.Balance - amount // allow negative balance
+	wallet.Balance = balance
+	result := tx.Model(&models.WalletModel{}).Where("id = ?", wallet.ID).Update("balance", balance)
+	//result := tx.Model(wallet).Updates(models.WalletModel{Balance: balance})
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
 }
