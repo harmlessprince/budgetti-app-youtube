@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
+	"github.com/harmlessprince/bougette-backend/cmd/api/filters"
 	"github.com/harmlessprince/bougette-backend/cmd/api/requests"
 	"github.com/harmlessprince/bougette-backend/cmd/api/services"
 	"github.com/harmlessprince/bougette-backend/common"
@@ -13,9 +15,26 @@ import (
 
 func (h *Handler) ListTransactions(c echo.Context) error {
 	user, _ := c.Get("user").(models.UserModel)
+	// bind request body
+	filter := new(filters.TransactionFilter)
+	err := (&echo.DefaultBinder{}).BindQueryParams(c, filter)
+	if err != nil {
+		return err
+	}
+	err = filter.ValidateDate()
+	if err != nil {
+		return common.SendBadRequestResponse(c, err.Error())
+	}
+
+	fmt.Println(filter)
+
+	query := filter.ApplyFilters(h.DB)
+
+	transactionService := services.NewTransactionService(query)
+
 	var transactions []*models.TransactionModel
-	transactionService := services.NewTransactionService(h.DB)
-	paginator := common.NewPaginator(transactions, c.Request(), h.DB)
+
+	paginator := common.NewPaginator(transactions, c.Request(), query)
 	paginatedTransactions, err := transactionService.List(transactions, user.ID, paginator)
 	if err != nil {
 		return common.SendInternalServerErrorResponse(c, err.Error())
