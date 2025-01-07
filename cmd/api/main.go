@@ -54,7 +54,6 @@ func main() {
 	e.Use(middlewares.CustomMiddleware)
 
 	app.routes(h)
-	fmt.Println(app)
 	port := os.Getenv("APP_PORT")
 	appAddress := fmt.Sprintf("localhost:%s", port)
 	e.Logger.Fatal(e.Start(appAddress))
