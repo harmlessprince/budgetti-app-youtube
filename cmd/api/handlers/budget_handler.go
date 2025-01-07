@@ -5,7 +5,6 @@ import (
 	"github.com/harmlessprince/bougette-backend/cmd/api/requests"
 	"github.com/harmlessprince/bougette-backend/cmd/api/services"
 	"github.com/harmlessprince/bougette-backend/common"
-	"github.com/harmlessprince/bougette-backend/internal/app_errors"
 	"github.com/harmlessprince/bougette-backend/internal/models"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
@@ -109,10 +108,7 @@ func (h *Handler) UpdateBudget(c echo.Context) error {
 	budget, err := budgetService.GetById(budgetID.ID)
 
 	if err != nil {
-		if errors.Is(err, app_errors.NewNotFoundError(err.Error())) {
-			return common.SendNotFoundResponse(c, err.Error())
-		}
-		return common.SendBadRequestResponse(c, err.Error())
+		return err
 	}
 	if user.ID != budget.UserID {
 		return common.SendNotFoundResponse(c, "Budget not found")
@@ -129,13 +125,11 @@ func (h *Handler) UpdateBudget(c echo.Context) error {
 		categoryService.DB = tx
 		updatedBudget, err := budgetService.Update(budget, payload, budgetID.ID)
 		if err != nil {
-			c.Logger().Error(err)
 			return common.SendBadRequestResponse(c, err.Error())
 		}
 		if len(categories) > 0 {
 			err = budgetService.DB.Model(updatedBudget).Association("Categories").Replace(categories)
 			if err != nil {
-				c.Logger().Error(err)
 				return common.SendInternalServerErrorResponse(c, "Budget could not be updated")
 			}
 			updatedBudget.Categories = categories
@@ -165,8 +159,7 @@ func (h *Handler) DeleteBudget(c echo.Context) error {
 	query := h.DB.Scopes(common.WhereUserIDScope(user.ID))
 	err = h.DB.Model(&budget).Association("Categories").Clear()
 	if err != nil {
-		c.Logger().Error(err)
-		return common.SendInternalServerErrorResponse(c, "Budget could not be deleted")
+		return errors.New("Budget could not be deleted")
 	}
 	query.Delete(&models.BudgetModel{}, budget.ID)
 	return common.SendSuccessResponse(c, "Budget Deleted Successfully ", nil)

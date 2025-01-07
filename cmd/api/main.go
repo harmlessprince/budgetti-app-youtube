@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/harmlessprince/bougette-backend/cmd/api/handlers"
 	"github.com/harmlessprince/bougette-backend/cmd/api/middlewares"
 	"github.com/harmlessprince/bougette-backend/common"
@@ -9,7 +8,6 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"os"
 )
 
 type Application struct {
@@ -52,11 +50,10 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middlewares.AnotherMiddleware)
 	e.Use(middlewares.CustomMiddleware)
-
-	app.routes(h)
-	port := os.Getenv("APP_PORT")
-	appAddress := fmt.Sprintf("localhost:%s", port)
-	e.Logger.Fatal(e.Start(appAddress))
+	err = app.serve()
+	if err != nil {
+		app.logger.Fatal(err)
+	}
 }
 
 //go get github.com/labstack/echo/v4/middleware

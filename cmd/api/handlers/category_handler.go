@@ -6,7 +6,6 @@ import (
 	"github.com/harmlessprince/bougette-backend/cmd/api/requests"
 	"github.com/harmlessprince/bougette-backend/cmd/api/services"
 	"github.com/harmlessprince/bougette-backend/common"
-	"github.com/harmlessprince/bougette-backend/internal/app_errors"
 	"github.com/harmlessprince/bougette-backend/internal/models"
 	"github.com/labstack/echo/v4"
 )
@@ -52,7 +51,7 @@ func (h *Handler) CreateCategory(c echo.Context) error {
 func (h *Handler) DeleteCategory(c echo.Context) error {
 	_, ok := c.Get("user").(models.UserModel)
 	if !ok {
-		return common.SendInternalServerErrorResponse(c, "User authentication failed")
+		return errors.New("User authentication failed")
 	}
 	var categoryId requests.IDParamRequest
 	err := (&echo.DefaultBinder{}).BindPathParams(c, &categoryId)
@@ -62,10 +61,7 @@ func (h *Handler) DeleteCategory(c echo.Context) error {
 	categoryService := services.NewCategoryService(h.DB)
 	err = categoryService.DeleteById(categoryId.ID)
 	if err != nil {
-		if errors.Is(err, app_errors.NewNotFoundError(err.Error())) {
-			return common.SendNotFoundResponse(c, err.Error())
-		}
-		return common.SendBadRequestResponse(c, err.Error())
+		return err
 	}
 	return common.SendSuccessResponse(c, "Category Deleted", nil)
 }
