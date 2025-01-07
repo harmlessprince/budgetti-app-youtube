@@ -9,6 +9,7 @@ import (
 	"github.com/harmlessprince/bougette-backend/internal/models"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
+	"net/http"
 	"os"
 )
 
@@ -23,7 +24,8 @@ func (h *Handler) RegisterHandler(c echo.Context) error {
 	validationErrors := h.ValidateBodyRequest(c, *payload)
 
 	if validationErrors != nil {
-		return common.SendFailedValidationResponse(c, validationErrors)
+		//return common.SendFailedValidationResponse(c, validationErrors)
+		return echo.NewHTTPError(http.StatusUnprocessableEntity, validationErrors)
 	}
 	userService := services.NewUserService(h.DB)
 	// Check if email exist
